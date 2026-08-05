@@ -2,11 +2,15 @@
 
 This document explains the end-to-end example built in this session: a semantic view on TPC-H sample data with verified queries used as automated test assertions, scheduled to run daily.
 
+![Cortex Code CLI session used to build this project](coco.png)
+
 ## Overview
 
 The semantic layer in Snowflake (via **Semantic Views**) provides a business-friendly abstraction over raw tables. **Verified Queries (VQRs)** are known-good SQL paired with natural language questions that guide Cortex Analyst. This example repurposes VQRs as regression tests — if the underlying data changes shape, the tests catch it.
 
 ## What Was Created
+
+![Semantic view and test objects overview](Semantic1.png)
 
 All objects live in `SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS`.
 
@@ -53,6 +57,8 @@ metric_revenue_positive    | Revenue metric is positive for all regions
 ```
 
 ## How to Run
+
+![Automated test framework in action](Semantic2.png)
 
 ```sql
 -- Run tests interactively (returns a table)
