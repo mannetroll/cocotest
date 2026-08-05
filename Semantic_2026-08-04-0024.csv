@@ -1,0 +1,59 @@
+"GET_DDL(
+  'SEMANTIC_VIEW',
+  'SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV'
+)"
+"create or replace semantic view TPCH_REVENUE_SV
+	tables (
+		SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.REGION primary key (R_REGIONKEY) comment='Geographic regions',
+		SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.NATION primary key (N_NATIONKEY) comment='Nations/countries',
+		SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER primary key (C_CUSTKEY) comment='Customer accounts',
+		SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS primary key (O_ORDERKEY) comment='Customer orders',
+		SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.LINEITEM primary key (L_ORDERKEY,L_LINENUMBER) comment='Order line items with pricing'
+	)
+	relationships (
+		NATION(N_REGIONKEY) references REGION(R_REGIONKEY),
+		CUSTOMER(C_NATIONKEY) references NATION(N_NATIONKEY),
+		ORDERS(O_CUSTKEY) references CUSTOMER(C_CUSTKEY),
+		LINEITEM(L_ORDERKEY) references ORDERS(O_ORDERKEY)
+	)
+	facts (
+		ORDERS.ORDER_TOTAL as O_TOTALPRICE comment='Total price of the order',
+		LINEITEM.EXTENDED_PRICE as L_EXTENDEDPRICE comment='Extended price before discount',
+		LINEITEM.DISCOUNT as L_DISCOUNT comment='Discount percentage (0 to 0.10)',
+		LINEITEM.QUANTITY as L_QUANTITY comment='Quantity ordered'
+	)
+	dimensions (
+		REGION.REGION_NAME as R_NAME comment='Region name: AFRICA, AMERICA, ASIA, EUROPE, MIDDLE EAST',
+		NATION.NATION_NAME as N_NAME comment='Nation name',
+		CUSTOMER.CUSTOMER_NAME as C_NAME comment='Customer name',
+		CUSTOMER.MARKET_SEGMENT as C_MKTSEGMENT comment='Market segment: AUTOMOBILE, BUILDING, FURNITURE, HOUSEHOLD, MACHINERY',
+		ORDERS.ORDER_DATE as O_ORDERDATE comment='Date the order was placed',
+		ORDERS.ORDER_STATUS as O_ORDERSTATUS comment='Order status: F=fulfilled, O=open, P=pending',
+		LINEITEM.SHIP_DATE as L_SHIPDATE comment='Date the line item shipped'
+	)
+	metrics (
+		LINEITEM.TOTAL_REVENUE as SUM(lineitem.L_EXTENDEDPRICE * (1 - lineitem.L_DISCOUNT)) comment='Total revenue after discount',
+		ORDERS.ORDER_COUNT as COUNT(DISTINCT orders.O_ORDERKEY) comment='Count of distinct orders',
+		ORDERS.AVG_ORDER_VALUE as AVG(orders.O_TOTALPRICE) comment='Average order total price'
+	)
+	comment='TPC-H revenue analysis semantic view for automated testing'
+	ai_verified_queries (
+		REVENUE_BY_REGION AS ( 
+QUESTION 'What is the total revenue by region?' 
+VERIFIED_AT 1722700000
+VERIFIED_BY '(STEWARD = data_team)'
+ONBOARDING_QUESTION true
+SQL 'SELECT region.R_NAME AS region_name, SUM(lineitem.L_EXTENDEDPRICE * (1 - lineitem.L_DISCOUNT)) AS total_revenue FROM SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.LINEITEM lineitem JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS orders ON lineitem.L_ORDERKEY = orders.O_ORDERKEY JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER customer ON orders.O_CUSTKEY = customer.C_CUSTKEY JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.NATION nation ON customer.C_NATIONKEY = nation.N_NATIONKEY JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.REGION region ON nation.N_REGIONKEY = region.R_REGIONKEY GROUP BY region.R_NAME ORDER BY total_revenue DESC'),
+		TOP_CUSTOMERS_BY_SPEND AS ( 
+QUESTION 'Who are the top 10 customers by total spend?' 
+VERIFIED_AT 1722700000
+VERIFIED_BY '(STEWARD = data_team)'
+ONBOARDING_QUESTION true
+SQL 'SELECT customer.C_NAME AS customer_name, customer.C_MKTSEGMENT AS market_segment, SUM(lineitem.L_EXTENDEDPRICE * (1 - lineitem.L_DISCOUNT)) AS total_spend FROM SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.LINEITEM lineitem JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS orders ON lineitem.L_ORDERKEY = orders.O_ORDERKEY JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER customer ON orders.O_CUSTKEY = customer.C_CUSTKEY GROUP BY customer.C_NAME, customer.C_MKTSEGMENT ORDER BY total_spend DESC LIMIT 10'),
+		AVG_ORDER_BY_SEGMENT AS ( 
+QUESTION 'What is the average order value by market segment?' 
+VERIFIED_AT 1722700000
+VERIFIED_BY '(STEWARD = data_team)'
+ONBOARDING_QUESTION false
+SQL 'SELECT customer.C_MKTSEGMENT AS market_segment, AVG(orders.O_TOTALPRICE) AS avg_order_value FROM SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.ORDERS orders JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER customer ON orders.O_CUSTKEY = customer.C_CUSTKEY GROUP BY customer.C_MKTSEGMENT ORDER BY avg_order_value DESC')
+	);"
