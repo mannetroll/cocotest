@@ -1,8 +1,8 @@
--- TPCH_REVENUE_SV.sql
+-- TPCH_REVENUE_SV_CODEX.sql
 --
 -- Generated without reading an existing Semantic View CSV.
--- Inputs:
---   1. TPCH_METADATA_DISCOVERY.sql and the supplied TPCH table DDL
+-- The only generation inputs are:
+--   1. TPCH_METADATA_DISCOVERY.sql
 --   2. TPCH_REVENUE_SV_DECISIONS.md
 --   3. create-semantic-view.md
 --
@@ -11,22 +11,25 @@
 -- connection. Run the discovery queries and review their results before
 -- production deployment.
 --
--- Required execution privileges:
---   * USAGE on source and target databases/schemas
---   * SELECT on the five source tables
---   * CREATE SEMANTIC VIEW on SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS
+-- BLOCKING DEPLOYMENT CONFLICT IN THE SHARED DECISIONS:
+-- TPCH_REVENUE_SV_DECISIONS.md selects the following target:
+--   SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV
+-- SNOWFLAKE_SAMPLE_DATA is a shared, read-only database, so the statement below
+-- cannot deploy successfully there. The target is retained to avoid silently
+-- changing the common Cortex/Codex input. Update the shared decisions with a
+-- writable target, then regenerate both outputs for a deployable comparison.
 --
 -- Plain CREATE is intentional: this file does not replace an existing object.
 
-CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
+CREATE SEMANTIC VIEW SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV
   TABLES (
     region AS SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.REGION
       PRIMARY KEY (R_REGIONKEY)
-      COMMENT = 'One row per geographic region',
+      COMMENT = 'One row per geographic region (5 rows in TPCH SF1)',
 
     nation AS SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.NATION
       PRIMARY KEY (N_NATIONKEY)
-      COMMENT = 'One row per nation',
+      COMMENT = 'One row per nation (25 rows in TPCH SF1)',
 
     customer AS SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.CUSTOMER
       PRIMARY KEY (C_CUSTKEY)
@@ -91,7 +94,7 @@ CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
 
     PUBLIC orders.order_status AS O_ORDERSTATUS
       WITH SYNONYMS = ('status')
-      COMMENT = 'Order status code; interpret codes according to approved business definitions',
+      COMMENT = 'Order status: F=Fulfilled, O=Open, P=Partial',
 
     PUBLIC orders.order_date AS O_ORDERDATE
       WITH SYNONYMS = ('order date')
@@ -102,10 +105,10 @@ CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
       COMMENT = 'Date the line item was shipped',
 
     PUBLIC lineitem.return_flag AS L_RETURNFLAG
-      COMMENT = 'Return-status code from the source data',
+      COMMENT = 'Return flag: A=Accepted, N=None, R=Returned',
 
     PUBLIC lineitem.line_status AS L_LINESTATUS
-      COMMENT = 'Line-status code from the source data',
+      COMMENT = 'Line status: F=Finished, O=Open',
 
     PUBLIC lineitem.ship_mode AS L_SHIPMODE
       WITH SYNONYMS = ('shipping method')
@@ -134,13 +137,13 @@ CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
   AI_SQL_GENERATION
     'Revenue is L_EXTENDEDPRICE * (1 - L_DISCOUNT) and excludes tax. Include all line items unless the user explicitly requests a status or return filter. Use order_date as the primary time dimension. Use lineitem for revenue and orders for order count and average order value.'
 
-  -- The decision input selects these query definitions but supplies neither a
-  -- verifier identity nor a trustworthy execution timestamp. Optional
-  -- VERIFIED_BY and VERIFIED_AT properties are therefore omitted.
+  -- The shared decision input selects these queries but does not provide a
+  -- Unix verification timestamp, a contact suitable for VERIFIED_BY, or an
+  -- onboarding choice. Those optional properties are therefore omitted rather
+  -- than invented.
   AI_VERIFIED_QUERIES (
     revenue_by_region AS (
       QUESTION 'What is the total revenue by region?'
-      ONBOARDING_QUESTION TRUE
       SQL $$
         SELECT
           r.R_NAME AS region_name,
@@ -161,7 +164,6 @@ CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
 
     orders_by_segment AS (
       QUESTION 'How many orders were placed per market segment?'
-      ONBOARDING_QUESTION TRUE
       SQL $$
         SELECT
           c.C_MKTSEGMENT AS market_segment,
@@ -176,7 +178,6 @@ CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
 
     avg_order_value_by_nation AS (
       QUESTION 'What is the average order value by nation?'
-      ONBOARDING_QUESTION TRUE
       SQL $$
         SELECT
           n.N_NAME AS nation_name,
@@ -198,12 +199,12 @@ CREATE SEMANTIC VIEW SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
 
 -- Inspect Snowflake's normalized metadata.
 DESCRIBE SEMANTIC VIEW
-  SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV;
+  SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV;
 
 -- Inspect Snowflake's canonical creation statement.
 SELECT GET_DDL(
   'SEMANTIC_VIEW',
-  'SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV'
+  'SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV'
 );
 
 -- Validate the candidate composite key. Expected: row_count equals
@@ -235,7 +236,7 @@ LEFT JOIN SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.REGION AS r
 -- DIMENSIONS and METRICS do not wrap their expression lists in parentheses.
 SELECT *
 FROM SEMANTIC_VIEW(
-  SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
+  SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV
   DIMENSIONS region.region_name
   METRICS lineitem.total_revenue
 )
@@ -244,7 +245,7 @@ ORDER BY total_revenue DESC;
 -- Query order count by market segment.
 SELECT *
 FROM SEMANTIC_VIEW(
-  SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
+  SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV
   DIMENSIONS customer.market_segment
   METRICS orders.total_orders
 )
@@ -253,7 +254,7 @@ ORDER BY total_orders DESC;
 -- Query average order value by nation.
 SELECT *
 FROM SEMANTIC_VIEW(
-  SNOWFLAKE_LEARNING_DB.SEMANTIC_TESTS.TPCH_REVENUE_SV
+  SNOWFLAKE_SAMPLE_DATA.TPCH_SF1.TPCH_REVENUE_SV
   DIMENSIONS nation.nation_name
   METRICS orders.avg_order_value
 )
