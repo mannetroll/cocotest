@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="snowflake-source" content="cortex-agent-authored" />
+  <title>Session Timeline — 2e3f3c64</title>
+  <script type="application/json" id="snowflake-report-metadata">
+  {
+    "generated": "2026-08-08",
+    "intent": "Timeline chart of queries and token usage for Cortex Code session 2e3f3c64-aa1d-4975-9fe7-71937bc4bf15",
+    "sections": [
+      { "id": "timeline-chart", "title": "Activity Timeline",
+        "dataSources": [{ "type": "conversation_transcript", "session_id": "2e3f3c64-aa1d-4975-9fe7-71937bc4bf15" }],
+        "producerNotes": "Data extracted from cortex conversations transcript command. Character counts used as proxy for token usage (approx 4 chars per token)." }
+    ]
+  }
+  </script>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, system-ui, sans-serif;
+      max-width: 1100px; margin: 0 auto; padding: 24px;
+      color: light-dark(#1f2937, #e5e7eb);
+      background: light-dark(#ffffff, #111827);
+    }
+    h1, h2, h3 { color: light-dark(#0f172a, #f1f5f9); }
+    .subtitle { color: light-dark(#6b7280, #9ca3af); font-size: 0.9em; margin-top: -12px; }
+    .stats { display: flex; gap: 24px; flex-wrap: wrap; margin: 20px 0; }
+    .stat-card {
+      background: light-dark(#f9fafb, #1f2937);
+      border: 1px solid light-dark(#e5e7eb, #374151);
+      border-radius: 8px; padding: 16px 20px; min-width: 140px;
+    }
+    .stat-card .value { font-size: 1.8em; font-weight: 700; color: light-dark(#1d4ed8, #60a5fa); }
+    .stat-card .label { font-size: 0.85em; color: light-dark(#6b7280, #9ca3af); margin-top: 4px; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 0.85em; }
+    th, td { border: 1px solid light-dark(#d1d5db, #374151); padding: 5px 8px; text-align: left; }
+    th { background: light-dark(#f3f4f6, #1f2937); font-weight: 600; }
+    tr:nth-child(even) { background: light-dark(#f9fafb, #111827); }
+    .tool-badge {
+      display: inline-block; background: light-dark(#dbeafe, #1e3a5f);
+      color: light-dark(#1d4ed8, #93c5fd); border-radius: 4px;
+      padding: 1px 6px; margin: 1px 2px; font-size: 0.8em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Session Timeline</h1>
+  <p class="subtitle">Session 2e3f3c64-aa1d-4975-9fe7-71937bc4bf15 — "Building Snowflake Semantic View CSV from Source Material"</p>
+
+  <div class="stats">
+    <div class="stat-card"><div class="value">53</div><div class="label">Messages</div></div>
+    <div class="stat-card"><div class="value">~8.1k</div><div class="label">Thinking chars</div></div>
+    <div class="stat-card"><div class="value">~32k</div><div class="label">Output chars</div></div>
+    <div class="stat-card"><div class="value">14</div><div class="label">Tool calls</div></div>
+    <div class="stat-card"><div class="value">2</div><div class="label">Sessions (Aug 5 & 8)</div></div>
+  </div>
+
+  <h2 id="timeline-chart">Activity Timeline</h2>
+  <canvas id="timeline" width="1050" height="400"></canvas>
+
+  <h2 id="tool-usage">Tool Usage Over Time</h2>
+  <canvas id="tools-chart" width="1050" height="250"></canvas>
+
+  <h2>Message Detail</h2>
+  <table>
+    <thead><tr><th>#</th><th>Time</th><th>Role</th><th>Thinking</th><th>Output</th><th>Tools</th></tr></thead>
+    <tbody id="detail-table"></tbody>
+  </table>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script>
+    var messages = [
+      {idx:0,role:"user",ts:"2026-08-05T06:38:26",think:0,text:11238,tools:[]},
+      {idx:1,role:"assistant",ts:"2026-08-05T06:38:33",think:76,text:113,tools:["read","read","read"]},
+      {idx:3,role:"assistant",ts:"2026-08-05T06:38:38",think:0,text:61,tools:["glob"]},
+      {idx:5,role:"assistant",ts:"2026-08-05T06:38:41",think:0,text:0,tools:["read"]},
+      {idx:7,role:"assistant",ts:"2026-08-05T06:44:21",think:305,text:3533,tools:["bash"]},
+      {idx:9,role:"assistant",ts:"2026-08-05T06:45:14",think:0,text:0,tools:["bash"]},
+      {idx:11,role:"assistant",ts:"2026-08-05T06:45:19",think:0,text:0,tools:["bash"]},
+      {idx:13,role:"assistant",ts:"2026-08-05T06:45:25",think:0,text:0,tools:["bash"]},
+      {idx:15,role:"assistant",ts:"2026-08-05T06:46:21",think:0,text:1065,tools:["write"]},
+      {idx:17,role:"assistant",ts:"2026-08-05T06:46:30",think:0,text:40,tools:["bash"]},
+      {idx:19,role:"assistant",ts:"2026-08-05T06:46:41",think:0,text:1039,tools:[]},
+      {idx:21,role:"assistant",ts:"2026-08-08T06:33:31",think:725,text:423,tools:[]},
+      {idx:23,role:"assistant",ts:"2026-08-08T06:33:48",think:0,text:0,tools:["skill"]},
+      {idx:25,role:"assistant",ts:"2026-08-08T06:33:53",think:0,text:118,tools:["read"]},
+      {idx:27,role:"assistant",ts:"2026-08-08T06:34:00",think:0,text:793,tools:[]},
+      {idx:29,role:"assistant",ts:"2026-08-08T06:35:00",think:178,text:314,tools:[]},
+      {idx:31,role:"assistant",ts:"2026-08-08T06:35:48",think:99,text:0,tools:["read","read"]},
+      {idx:33,role:"assistant",ts:"2026-08-08T06:35:58",think:0,text:106,tools:["sql_execute","sql_execute"]},
+      {idx:35,role:"assistant",ts:"2026-08-08T06:36:04",think:0,text:594,tools:[]},
+      {idx:37,role:"assistant",ts:"2026-08-08T06:36:35",think:405,text:338,tools:[]},
+      {idx:39,role:"assistant",ts:"2026-08-08T06:37:07",think:533,text:151,tools:["sql_execute"]},
+      {idx:41,role:"assistant",ts:"2026-08-08T06:37:13",think:0,text:627,tools:[]},
+      {idx:43,role:"assistant",ts:"2026-08-08T06:38:30",think:0,text:0,tools:["bash"]},
+      {idx:45,role:"assistant",ts:"2026-08-08T06:38:48",think:0,text:444,tools:["bash"]},
+      {idx:47,role:"assistant",ts:"2026-08-08T06:38:58",think:0,text:0,tools:["bash"]},
+      {idx:49,role:"assistant",ts:"2026-08-08T06:39:03",think:0,text:0,tools:["bash"]},
+      {idx:51,role:"assistant",ts:"2026-08-08T06:39:12",think:0,text:1063,tools:[]}
+    ];
+
+    // Timeline chart - characters over message sequence
+    var labels = messages.map(function(m) {
+      return m.ts.substring(11, 16);
+    });
+    var thinkData = messages.map(function(m) { return m.think; });
+    var textData = messages.map(function(m) { return m.text; });
+
+    new Chart(document.getElementById('timeline'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Thinking (chars)', data: thinkData, backgroundColor: 'rgba(99, 102, 241, 0.7)' },
+          { label: 'Output text (chars)', data: textData, backgroundColor: 'rgba(34, 197, 94, 0.7)' }
+        ]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          title: { display: true, text: 'Characters per Assistant Turn (Thinking vs Output)' }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Time (HH:MM)' }, ticks: { maxRotation: 45 } },
+          y: { title: { display: true, text: 'Characters' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // Tool usage chart
+    var toolCounts = {};
+    messages.forEach(function(m) {
+      m.tools.forEach(function(t) {
+        toolCounts[t] = (toolCounts[t] || 0) + 1;
+      });
+    });
+    var toolLabels = Object.keys(toolCounts).sort(function(a, b) { return toolCounts[b] - toolCounts[a]; });
+    var toolValues = toolLabels.map(function(t) { return toolCounts[t]; });
+    var toolColors = ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#06b6d4','#84cc16'];
+
+    new Chart(document.getElementById('tools-chart'), {
+      type: 'doughnut',
+      data: {
+        labels: toolLabels,
+        datasets: [{ data: toolValues, backgroundColor: toolColors.slice(0, toolLabels.length) }]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          title: { display: true, text: 'Tool Calls by Type' },
+          legend: { position: 'right' }
+        }
+      }
+    });
+
+    // Detail table
+    var tbody = document.getElementById('detail-table');
+    messages.forEach(function(m) {
+      var tr = document.createElement('tr');
+      var toolsHtml = m.tools.map(function(t) { return '<span class="tool-badge">' + t + '</span>'; }).join('');
+      tr.innerHTML = '<td>' + m.idx + '</td><td>' + m.ts.substring(5, 16) + '</td><td>' + m.role + '</td><td>' + m.think.toLocaleString() + '</td><td>' + m.text.toLocaleString() + '</td><td>' + (toolsHtml || '—') + '</td>';
+      tbody.appendChild(tr);
+    });
+  </script>
+
+</body>
+</html>
