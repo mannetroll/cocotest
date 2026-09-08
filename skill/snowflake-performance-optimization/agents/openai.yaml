@@ -1,0 +1,4 @@
+interface:
+  display_name: "Snowflake Performance Optimization"
+  short_description: "Profile and optimize Snowflake pipelines safely"
+  default_prompt: "Use $snowflake-performance-optimization to profile this Snowflake job and improve its end-to-end runtime and cost through isolated, correctness-verified experiments."
